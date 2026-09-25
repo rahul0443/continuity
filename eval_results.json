@@ -1,0 +1,299 @@
+{
+  "n_scenarios": 16,
+  "dry_run": true,
+  "retrieval": {
+    "mean_precision_at_k": 0.5875,
+    "mean_recall_at_k": 0.9375,
+    "mean_mrr": 0.7083333333333334
+  },
+  "scenarios": [
+    {
+      "id": "FS-001",
+      "equipment": "AMX-5200 Plasma Etch System",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 1.0,
+        "recall_at_k": 1.0,
+        "mrr": 1.0,
+        "retrieved_doc_ids": [
+          "INC-AMX5200-014",
+          "SOP-AMX5200-001",
+          "SOP-AMX5200-001",
+          "INC-AMX5200-014",
+          "INC-AMX5200-014"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-002",
+      "equipment": "AMX-5200 Plasma Etch System",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 1.0,
+        "recall_at_k": 1.0,
+        "mrr": 1.0,
+        "retrieved_doc_ids": [
+          "INC-AMX5200-021",
+          "SOP-AMX5200-001",
+          "INC-AMX5200-021",
+          "SOP-AMX5200-001",
+          "INC-AMX5200-021"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-003",
+      "equipment": "AMX-5200 Plasma Etch System",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 0.2,
+        "recall_at_k": 1.0,
+        "mrr": 0.3333333333333333,
+        "retrieved_doc_ids": [
+          "INC-AMX5200-014",
+          "SOP-AMX5200-001",
+          "KI-AMX5200-001",
+          "INC-AMX5200-021",
+          "INC-AMX5200-014"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-004",
+      "equipment": "Vantage PECVD 300 Deposition System",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 0.8,
+        "recall_at_k": 1.0,
+        "mrr": 1.0,
+        "retrieved_doc_ids": [
+          "INC-VNT300-017",
+          "SOP-VNT300-002",
+          "INC-VNT300-009",
+          "SOP-VNT300-002",
+          "SOP-VNT300-002"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-005",
+      "equipment": "Vantage PECVD 300 Deposition System",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 0.2,
+        "recall_at_k": 1.0,
+        "mrr": 0.5,
+        "retrieved_doc_ids": [
+          "SOP-VNT300-002",
+          "KI-VNT300-001",
+          "INC-VNT300-009",
+          "SOP-VNT300-002",
+          "SOP-VNT300-002"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-006",
+      "equipment": "Orbis CMP-7 Polisher",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 1.0,
+        "recall_at_k": 1.0,
+        "mrr": 1.0,
+        "retrieved_doc_ids": [
+          "INC-ORB7-011",
+          "SOP-ORB7-003",
+          "INC-ORB7-011",
+          "SOP-ORB7-003",
+          "SOP-ORB7-003"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-007",
+      "equipment": "Orbis CMP-7 Polisher",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 1.0,
+        "recall_at_k": 0.5,
+        "mrr": 1.0,
+        "retrieved_doc_ids": [
+          "INC-ORB7-022",
+          "INC-ORB7-022",
+          "INC-ORB7-022",
+          "INC-ORB7-022",
+          "INC-ORB7-022"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-008",
+      "equipment": "Helios NXP-2100 Lithography Scanner",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 1.0,
+        "recall_at_k": 1.0,
+        "mrr": 1.0,
+        "retrieved_doc_ids": [
+          "INC-HLX2100-006",
+          "SOP-HLX2100-004",
+          "INC-HLX2100-006",
+          "INC-HLX2100-006",
+          "INC-HLX2100-006"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-009",
+      "equipment": "Helios NXP-2100 Lithography Scanner",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 1.0,
+        "recall_at_k": 1.0,
+        "mrr": 1.0,
+        "retrieved_doc_ids": [
+          "INC-HLX2100-013",
+          "INC-HLX2100-013",
+          "INC-HLX2100-013",
+          "SOP-HLX2100-004",
+          "INC-HLX2100-013"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-010",
+      "equipment": "Helios NXP-2100 Lithography Scanner",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 0.2,
+        "recall_at_k": 1.0,
+        "mrr": 0.5,
+        "retrieved_doc_ids": [
+          "SOP-HLX2100-004",
+          "KI-HLX2100-001",
+          "INC-HLX2100-006",
+          "INC-HLX2100-006",
+          "INC-HLX2100-006"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-011",
+      "equipment": "ThermaLine VF-800 Vertical Diffusion Furnace",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 0.8,
+        "recall_at_k": 1.0,
+        "mrr": 1.0,
+        "retrieved_doc_ids": [
+          "INC-TLVF800-008",
+          "SOP-TLVF800-005",
+          "INC-VNT300-017",
+          "INC-TLVF800-008",
+          "INC-TLVF800-008"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-012",
+      "equipment": "ThermaLine VF-800 Vertical Diffusion Furnace",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 0.2,
+        "recall_at_k": 1.0,
+        "mrr": 1.0,
+        "retrieved_doc_ids": [
+          "KI-TLVF800-001",
+          "SOP-AMX5200-001",
+          "KI-AMX5200-001",
+          "SOP-AMX5200-001",
+          "INC-TLVF800-008"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-013",
+      "equipment": "ThermaLine VF-800 Vertical Diffusion Furnace",
+      "expects_escalation": false,
+      "retrieval": {
+        "precision_at_k": 1.0,
+        "recall_at_k": 0.5,
+        "mrr": 1.0,
+        "retrieved_doc_ids": [
+          "INC-TLVF800-019",
+          "INC-TLVF800-019",
+          "INC-TLVF800-019",
+          "INC-TLVF800-019",
+          "INC-TLVF800-019"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-014",
+      "equipment": "Wet Bench Station",
+      "expects_escalation": true,
+      "retrieval": {
+        "precision_at_k": 0.0,
+        "recall_at_k": 1.0,
+        "mrr": 0.0,
+        "retrieved_doc_ids": [
+          "SOP-VNT300-002",
+          "INC-VNT300-017",
+          "SOP-VNT300-002",
+          "SOP-ORB7-003",
+          "INC-ORB7-022"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-015",
+      "equipment": "Orbis CMP-7 Polisher",
+      "expects_escalation": true,
+      "retrieval": {
+        "precision_at_k": 0.0,
+        "recall_at_k": 1.0,
+        "mrr": 0.0,
+        "retrieved_doc_ids": [
+          "SOP-ORB7-003",
+          "KI-ORB7-001",
+          "SOP-ORB7-003",
+          "SOP-ORB7-003",
+          "INC-ORB7-011"
+        ]
+      },
+      "score_gate_would_escalate": false
+    },
+    {
+      "id": "FS-016",
+      "equipment": "Helios NXP-2100 Lithography Scanner",
+      "expects_escalation": true,
+      "retrieval": {
+        "precision_at_k": 0.0,
+        "recall_at_k": 1.0,
+        "mrr": 0.0,
+        "retrieved_doc_ids": [
+          "INC-HLX2100-013",
+          "SOP-HLX2100-004",
+          "SOP-HLX2100-004",
+          "INC-HLX2100-013",
+          "SOP-HLX2100-004"
+        ]
+      },
+      "score_gate_would_escalate": false
+    }
+  ]
+}

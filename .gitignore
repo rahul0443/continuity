@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.chroma/
+*.egg-info/
+data/knowledge_gaps.jsonl
+data/learned_cases.jsonl
+.DS_Store

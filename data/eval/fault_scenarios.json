@@ -1,0 +1,130 @@
+[
+  {
+    "id": "FS-001",
+    "equipment": "AMX-5200 Plasma Etch System",
+    "query": "RF match on chamber 3 is tuning fine but taking about 13 seconds instead of the usual under 8, and reflected power spikes briefly before settling under 2%. It technically passes the tune every time.",
+    "relevant_doc_ids": ["SOP-AMX5200-001", "INC-AMX5200-014"],
+    "expects_escalation": false,
+    "reference_answer": "A match that eventually tunes is not the same as a healthy match. Slow tuning time with a brief reflected-power spike is consistent with a degraded match box cooling fan causing the match network electronics to run hot and destabilizing tuning (see INC-AMX5200-014, which led to a scrap event from running lots through this exact signature). Check/replace the match box cooling fan. Do not release the chamber to production if this recurs more than twice in a shift, per SOP-AMX5200-001 Section 4, even though it currently passes the pass/fail interlock."
+  },
+  {
+    "id": "FS-002",
+    "equipment": "AMX-5200 Plasma Etch System",
+    "query": "Post-etch particle adder count is elevated well above the release threshold even though the chamber viewport looks fine and we did a wet clean recently. RF match is healthy.",
+    "relevant_doc_ids": ["SOP-AMX5200-001", "INC-AMX5200-021"],
+    "expects_escalation": false,
+    "reference_answer": "The standard viewport visual check can under-report polymer buildup on the chamber wall opposite the gas injector, since that area is partially occluded from the normal viewing angle. This is exactly the root cause found in INC-AMX5200-021, particularly after a period of heavy fluorocarbon recipe usage. Perform a borescope inspection of the wall area opposite the injector and schedule a targeted wet clean of that area rather than trusting the straight-on viewport check alone."
+  },
+  {
+    "id": "FS-003",
+    "equipment": "AMX-5200 Plasma Etch System",
+    "query": "I've noticed a slight change in pitch, almost a higher whine, during the chamber purge cycle specifically on chamber 3. Pressure and RF match both look completely normal right now.",
+    "relevant_doc_ids": ["KI-AMX5200-001"],
+    "expects_escalation": false,
+    "reference_answer": "This matches a known tacit-knowledge pattern captured from a rotating senior engineer, not documented elsewhere: a subtle increase in higher-frequency whine during the purge cycle specifically (not normal pumpdown) is an early sign of foreline dry pump bearing wear, appearing two to three weeks before it would show up as a pressure or RF match signature. Schedule a proactive foreline pump inspection now rather than waiting for a measurable pressure or match fault to appear."
+  },
+  {
+    "id": "FS-004",
+    "equipment": "Vantage PECVD 300 Deposition System",
+    "query": "Film uniformity has failed on three consecutive monitor wafers with an edge-high signature. Showerhead inspection and electrode gap verification both passed.",
+    "relevant_doc_ids": ["SOP-VNT300-002", "INC-VNT300-017"],
+    "expects_escalation": false,
+    "reference_answer": "When showerhead and electrode gap both pass but edge-high uniformity persists, check the secondary thermocouple probe against the primary control thermocouple per SOP-VNT300-002 Section 5. A single degraded heater zone can read correctly on the primary control thermocouple while the physical wafer surface runs several degrees off, as found in INC-VNT300-017 (control TC read within 1°C while actual surface temperature was ~6°C low). This is a distinct failure mode the primary control loop cannot detect on its own."
+  },
+  {
+    "id": "FS-005",
+    "equipment": "Vantage PECVD 300 Deposition System",
+    "query": "It's monsoon season right now and showerhead blockage seems to be crossing the 3% threshold faster than our normal weekly PM cadence catches it.",
+    "relevant_doc_ids": ["KI-VNT300-001"],
+    "expects_escalation": false,
+    "reference_answer": "This matches an informal, undocumented pattern from a rotating senior engineer: ambient humidity swings during Arizona's monsoon season correlate with a measurable uptick in showerhead hole blockage rate, likely via precursor gas line moisture content. During this seasonal window, shorten the showerhead inspection interval from the standard weekly PM to roughly every 4-5 days rather than waiting for the normal weekly cadence, since blockage can cross the 3% threshold faster during this period."
+  },
+  {
+    "id": "FS-006",
+    "equipment": "Orbis CMP-7 Polisher",
+    "query": "Cu removal rate has been slowly declining over about two weeks and is now outside the +/-7% spec, even though pad conditioning and slurry qualification both pass every shift.",
+    "relevant_doc_ids": ["SOP-ORB7-003", "INC-ORB7-011"],
+    "expects_escalation": false,
+    "reference_answer": "A gradual, multi-week removal rate decline despite passing pad and slurry checks is consistent with retaining ring wear, which changes the wafer-edge pressure profile without an obvious visual defect on the ring itself, as found in INC-ORB7-011. Inspect and replace the retaining ring ahead of its normal scheduled PM interval rather than waiting for the next PM."
+  },
+  {
+    "id": "FS-007",
+    "equipment": "Orbis CMP-7 Polisher",
+    "query": "First wafer of the shift after the weekend shutdown has noticeably lower removal rate, but the slurry tank sensor shows normal flow.",
+    "relevant_doc_ids": ["SOP-ORB7-003", "INC-ORB7-022"],
+    "expects_escalation": false,
+    "reference_answer": "The tank-side slurry flow sensor cannot detect a partial restriction that develops downstream of it, in the line to the polishing head. Check the point-of-use flow sensor at the polishing head, not just the tank sensor, per SOP-ORB7-003 Section 3. After an extended idle period like a weekend shutdown, settled particle buildup can restrict flow; extend the slurry line purge beyond the standard 5 minutes (INC-ORB7-022 resolved with a 15-minute purge)."
+  },
+  {
+    "id": "FS-008",
+    "equipment": "Helios NXP-2100 Lithography Scanner",
+    "query": "Overlay calibration failed at start of shift at about +4.5nm. The pattern looks similar to past lens alignment issues, so we're about to schedule a lens realignment.",
+    "relevant_doc_ids": ["SOP-HLX2100-004", "INC-HLX2100-006"],
+    "expects_escalation": false,
+    "reference_answer": "Before scheduling a lens realignment, check wafer stage temperature stability logs per SOP-HLX2100-004 Section 2 — stage thermal drift produces an overlay error signature nearly identical to a lens alignment fault at moderate magnitudes. INC-HLX2100-006 found the actual cause was a facility chiller setpoint change causing stage chuck thermal drift, resolved by correcting the chiller setpoint with no lens intervention needed, avoiding significant unnecessary downtime."
+  },
+  {
+    "id": "FS-009",
+    "equipment": "Helios NXP-2100 Lithography Scanner",
+    "query": "One specific reticle keeps producing CD excursions on two separate lots about a week apart, while every other reticle running the same layer on the same scanner is within spec.",
+    "relevant_doc_ids": ["SOP-HLX2100-004", "INC-HLX2100-013"],
+    "expects_escalation": false,
+    "reference_answer": "Because the excursion is isolated to a single reticle rather than tool-wide, escalate to reticle pod inspection rather than investigating the scanner. Reticle pod contamination on the pellicle side is the leading cause of hard-to-reproduce, reticle-specific excursions per SOP-HLX2100-004 Section 3 and is exactly what was found in INC-HLX2100-013. Clean/re-pelliclize the reticle and replace the pod."
+  },
+  {
+    "id": "FS-010",
+    "equipment": "Helios NXP-2100 Lithography Scanner",
+    "query": "Overlay calibration is marginally failing during certain hours of the day, stage temperature logs look only slightly off, and it seems to happen more when the etch bay next door is busy.",
+    "relevant_doc_ids": ["KI-HLX2100-001"],
+    "expects_escalation": false,
+    "reference_answer": "This matches an undocumented cross-tool interaction from a rotating senior engineer: simultaneous high-power RF plasma strikes on multiple AMX-5200 etch chambers can cause a brief facility voltage sag on a shared power circuit, producing a small stage temperature transient on the Helios scanner. This is usually too small to fail calibration outright but can push a marginal calibration over the edge, especially combined with other stage drift causes. Check whether marginal overlay failures correlate with etch bay activity before pursuing a deeper scanner-side investigation."
+  },
+  {
+    "id": "FS-011",
+    "equipment": "ThermaLine VF-800 Vertical Diffusion Furnace",
+    "query": "Top-to-bottom thickness non-uniformity has been slowly worsening over about a month. All heater zone temperatures read within spec.",
+    "relevant_doc_ids": ["SOP-TLVF800-005", "INC-TLVF800-008"],
+    "expects_escalation": false,
+    "reference_answer": "A gradual, multi-week non-uniformity drift on this furnace family points toward gas injector flow distribution drift rather than heater degradation, even though a heater issue is the more intuitive first suspect. Check gas injector flow calibration against qualified baseline per SOP-TLVF800-005 Section 4 — INC-TLVF800-008 found an 8% injector flow drift from orifice wear as the cause, resolved by recalibration."
+  },
+  {
+    "id": "FS-012",
+    "equipment": "ThermaLine VF-800 Vertical Diffusion Furnace",
+    "query": "A low-priority nitrogen supply pressure alarm keeps firing overnight on the furnace and seems to resolve itself each time.",
+    "relevant_doc_ids": ["KI-TLVF800-001"],
+    "expects_escalation": false,
+    "reference_answer": "This matches an undocumented, informal pattern known to overnight furnace engineers: facility N2 supply pressure has a mild cycling pattern more pronounced overnight, which regularly triggers this low-priority alarm without indicating a real furnace issue. Check whether the alarm timing matches the known facility N2 cycling pattern before escalating to a furnace-side investigation; only escalate if the timing or duration differs from that normal pattern."
+  },
+  {
+    "id": "FS-013",
+    "equipment": "ThermaLine VF-800 Vertical Diffusion Furnace",
+    "query": "We used a quartz boat last week that had a hairline crack, cleaned it, and judged it acceptable to keep using. Particle counts have been a bit elevated on the last two runs with that boat.",
+    "relevant_doc_ids": ["SOP-TLVF800-005", "INC-TLVF800-019"],
+    "expects_escalation": false,
+    "reference_answer": "A cracked boat that passes visual cleaning inspection can still elevate particle counts for the following 2-3 runs, not just the immediate next run, as found in INC-TLVF800-019. This is consistent with what's being observed. Retire the boat now rather than continuing to monitor it run-by-run per SOP-TLVF800-005 Section 2."
+  },
+  {
+    "id": "FS-014",
+    "equipment": "Wet Bench Station",
+    "query": "The acid bath temperature controller on the wet bench is showing erratic readings and jumping several degrees between checks.",
+    "relevant_doc_ids": [],
+    "expects_escalation": true,
+    "reference_answer": "No SOP, incident log, or knowledge-capture interview in the current knowledge base covers wet bench equipment at all. The system should decline to guess and should escalate to a senior equipment engineer, logging this as a knowledge gap for a future knowledge-capture interview rather than fabricating a plausible-sounding but ungrounded diagnosis."
+  },
+  {
+    "id": "FS-015",
+    "equipment": "Orbis CMP-7 Polisher",
+    "query": "The platen motor housing on the CMP polisher is making a new grinding noise we haven't heard before, unrelated to the conditioning disk.",
+    "relevant_doc_ids": [],
+    "expects_escalation": true,
+    "reference_answer": "While the Orbis CMP-7 is covered in the knowledge base, none of the SOPs, incident logs, or interviews describe platen motor housing noise or this failure mode. The system should not stretch unrelated CMP documentation (pad conditioning, slurry, retaining ring) to cover a mechanical motor fault it has no real evidence about, and should escalate rather than guess."
+  },
+  {
+    "id": "FS-016",
+    "equipment": "Helios NXP-2100 Lithography Scanner",
+    "query": "The reticle library management software threw a checksum error when loading job files this morning — seems like an IT/software issue rather than a process issue.",
+    "relevant_doc_ids": [],
+    "expects_escalation": true,
+    "reference_answer": "This is a software/IT issue, not a process or equipment fault, and is outside the scope of the SOPs, incident logs, and interviews in the knowledge base, which cover overlay, reticle handling, and process calibration only. The system should escalate rather than attempt a process-oriented diagnosis for what is likely an IT ticket."
+  }
+]

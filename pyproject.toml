@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "continuity"
+version = "0.1.0"
+description = "RAG-based institutional knowledge capture and fault-diagnosis assistant (portfolio PoC)"
+requires-python = ">=3.10"
+dependencies = [
+    "chromadb>=0.5,<0.6",
+    "rank-bm25>=0.2.2",
+    "langgraph>=0.2,<0.3",
+    "anthropic>=0.34",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "gradio>=4.44",
+    "pydantic>=2.7",
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
