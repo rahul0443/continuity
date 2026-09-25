@@ -112,11 +112,17 @@ Then open `http://localhost:8000`.
 
 ## Deployment
 
-`Dockerfile` builds the retrieval index at image build time and serves both the UI and API from one process on port 7860 — deployable as-is to Hugging Face Spaces (Docker SDK) or Render/Fly.io. Set `ANTHROPIC_API_KEY` as a secret on whichever platform you use; retrieval works without it, generation and eval do not.
+Deployed on **Render** as a Docker web service — live at: **[TODO: paste Render URL once live]**
+
+`Dockerfile` builds the retrieval index at image build time (local embedding model, no API key needed for this step) and serves both the UI and API from one process. It reads `$PORT` at container start rather than a fixed port, since Render (like most PaaS platforms) assigns that dynamically — the process binds to whatever Render tells it to, not a hardcoded value. `render.yaml` declares the service as a Blueprint: Docker runtime, free plan, health check at `/api/health`, and `ANTHROPIC_API_KEY` marked `sync: false` so Render requires it to be entered directly in the dashboard rather than ever living in git.
+
+The image was built and run locally against an arbitrary non-default `$PORT` before deploying, specifically to catch two real Docker footguns before Render would have surfaced them less legibly: an exec-form `CMD` can't expand `$PORT` at all (it needs shell-form or an explicit `sh -c`), and a bare shell-form `CMD` makes the shell PID 1 instead of uvicorn, so Render's SIGTERM on redeploy doesn't reach the app cleanly. Fixed by using `CMD ["sh", "-c", "exec uvicorn ..."]` — the `exec` replaces the shell with uvicorn so it becomes PID 1 and shuts down promptly on SIGTERM (verified: <1s).
+
+One free-tier caveat worth being upfront about: Render's free web services spin down after inactivity, so the first request after idle time cold-starts slowly (tens of seconds). A recruiter clicking the link cold will see that delay — not a bug, just the tradeoff of a $0 hosting tier for a portfolio demo.
 
 ## Path to production (explicitly out of scope here)
 
-This is a PoC, not a production system — naming that boundary is itself part of the JD's "partner with core IT and MLOps to transition prototypes into production-ready systems." Before this could run against real fab data, it would need: authentication and role-based access control; real data governance and PII/IP review on anything ingested; a persistence layer beyond local JSONL files for logged gaps and resolved cases; monitoring and alerting on escalation rate and judge-score drift; a human-review gate before any generated diagnosis reaches a live equipment action; and load-tested deployment beyond a single-process demo.
+This is a PoC, not a production system — naming that boundary is itself part of the JD's "partner with core IT and MLOps to transition prototypes into production-ready systems." Before this could run against real fab data, it would need: authentication and role-based access control; real data governance and PII/IP review on anything ingested; a persistence layer beyond local JSONL files for logged gaps and resolved cases (the current write-back demo — resolving a case, flagging a gap — writes to the container's local disk, which Render's free tier does not persist across restarts or redeploys; a real deployment needs an actual database here, not just more disk); monitoring and alerting on escalation rate and judge-score drift; a human-review gate before any generated diagnosis reaches a live equipment action; and load-tested deployment beyond a single-process demo.
 
 ## Repo layout
 
