@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import anthropic
 from fastapi import APIRouter, HTTPException
 
 from continuity.agent.graph import run_continuity_agent
@@ -27,6 +28,13 @@ def diagnose(req: DiagnoseRequest) -> DiagnoseResponse:
         result = run_continuity_agent(req.query, req.equipment)
     except MissingAPIKeyError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except anthropic.APIError as exc:
+        # Surface the real upstream error (bad/expired key, rate limit, quota,
+        # transient outage) instead of letting it fall through to FastAPI's
+        # generic, undiagnosable "Internal Server Error" — this was previously
+        # unhandled and is exactly what made a live-deployment failure
+        # impossible to diagnose from outside the host's own logs.
+        raise HTTPException(status_code=502, detail=f"Upstream Anthropic API error: {exc}") from exc
 
     retrieved_sources = [r.chunk.doc_id for r in result.get("retrieved", [])]
 

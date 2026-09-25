@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import anthropic
 import gradio as gr
 
 from continuity.agent.graph import run_continuity_agent
@@ -34,9 +35,12 @@ def _format_diagnosis(result: dict) -> tuple[str, str]:
     answer = result["answer"]
     lines = [f"### Diagnosis\n\n{answer.get('summary', '')}\n"]
     for i, cause in enumerate(answer.get("causes", []), start=1):
+        if not isinstance(cause, dict):
+            lines.append(f"**{i}.** _[unparseable cause entry, skipped]_\n")
+            continue
         lines.append(
-            f"**{i}. {cause['cause']}**  _(confidence: {cause['confidence']})_\n\n"
-            f"- Recommended action: {cause['recommended_action']}\n"
+            f"**{i}. {cause.get('cause', '?')}**  _(confidence: {cause.get('confidence', '?')})_\n\n"
+            f"- Recommended action: {cause.get('recommended_action', '?')}\n"
             f"- Cited sources: {', '.join(cause.get('cited_sources', [])) or 'none'}\n"
         )
     lines.append(f"\n*Retrieved context: {sources}*")
@@ -50,6 +54,8 @@ def diagnose_handler(query: str, equipment: str):
         result = run_continuity_agent(query.strip(), equipment or None)
     except MissingAPIKeyError as exc:
         return f"### Configuration needed\n\n{exc}", ""
+    except anthropic.APIError as exc:
+        return f"### Upstream Anthropic API error\n\n{exc}", ""
     return _format_diagnosis(result)
 
 
