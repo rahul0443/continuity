@@ -2,6 +2,10 @@
 
 **A RAG-based institutional knowledge-capture and fault-diagnosis assistant — an independent portfolio PoC built in the style of a Forward Deployed Engineer prototype.**
 
+**Live demo:** https://continuity-bgf2.onrender.com &nbsp;|&nbsp; **Eval results:** [eval_results.json](eval_results.json) (FAB-Bench overall mean 4.97/5, escalation accuracy 1.00, across 16 scenarios — see [Evaluation](#evaluation))
+
+*Free-tier hosting: the first request after idle time cold-starts slowly (tens of seconds) — that's Render's free plan spinning down, not a bug.*
+
 > ⚠️ **Scope disclaimer, read first:** This is an independent project built from public reporting. It does not use, and does not claim to use, any real TSMC internal data, SOPs, or systems. Every document in its knowledge base — SOPs, incident logs, and knowledge-capture interviews — is synthetic, written to be *representative* of the kind of institutional knowledge that is put at risk industry-wide when experienced engineers rotate out on fixed-term assignments. It demonstrates a prototyping pattern applied to a real, sourced, company-acknowledged problem — it is not a claim to have solved that problem or to understand TSMC's internal operations from the outside.
 
 ---
@@ -92,7 +96,21 @@ Two honest findings worth naming rather than smoothing over: recall@5 is 1.0 on 
 
 Also confirmed empirically: the cheap numeric score-gate (`MIN_FUSED_SCORE_THRESHOLD`) never fires on any of the 16 scenarios, including the 3 gap scenarios — the corpus is small enough that BM25/dense retrieval always returns *something* with a nonzero fused score, even when nothing is actually relevant. That's not a bug; it's the empirical justification for why the triage step has to be a real LLM semantic judgment rather than a numeric cutoff — a threshold alone cannot detect these gaps on this corpus.
 
-The five LLM-judged FAB-Bench dimensions (answer relevance, factual accuracy, completeness, reasoning clarity, domain specificity) and escalation accuracy require `ANTHROPIC_API_KEY` to run — see [`eval_results.json`](eval_results.json) for whichever numbers were most recently generated; regenerate it after any change to the corpus, prompts, or retrieval logic rather than trusting a stale copy.
+**Full results** (`python scripts/run_eval.py`, real Anthropic API calls, all 16 scenarios), most recently run against `claude-sonnet-5`:
+
+| Metric | Score |
+|---|---|
+| Escalation accuracy | 1.00 |
+| Answer relevance | 5.00 / 5 |
+| Factual accuracy | 4.92 / 5 |
+| Completeness | 4.92 / 5 |
+| Reasoning clarity | 5.00 / 5 |
+| Domain specificity | 5.00 / 5 |
+| **FAB-Bench overall mean** | **4.97 / 5** |
+
+Escalation accuracy of 1.00 means the agent correctly recognized all 3 deliberate knowledge-base gaps as gaps *and* correctly did not escalate on any of the 13 covered scenarios — no false alarms, no fabricated answers on the gaps. The near-perfect (not perfect) factual accuracy and completeness scores are worth trusting specifically because the judge is demonstrably not rubber-stamping: on `FS-004`, it explicitly docked both dimensions to 4/5 for omitting a specific quantitative detail from the reference answer (control thermocouple reading within 1°C while actual surface temperature was ~6°C off) and for adding sourced-but-unconfirmed secondary hypotheses — a substantive, specific critique, not a generic ding. Full per-scenario scores and justifications are in [`eval_results.json`](eval_results.json); regenerate after any change to the corpus, prompts, or retrieval logic rather than trusting a stale copy.
+
+One real bug this run surfaced and fixed (see `src/continuity/llm.py`): forced tool-use is not a hard schema guarantee — across different scenarios, Claude's structured output intermittently stringified the entire payload, omitted a field, or JSON-encoded individual array items instead of nesting them properly, each a *different* malformation on a *different* scenario, confirming this needed a general schema-driven repair pass rather than a fix for whichever shape was seen first. The eval harness also now catches a residual per-scenario failure and reports it rather than crashing the other 15 scenarios' results with it.
 
 ## Setup
 
@@ -112,7 +130,7 @@ Then open `http://localhost:8000`.
 
 ## Deployment
 
-Deployed on **Render** as a Docker web service — live at: **[TODO: paste Render URL once live]**
+Deployed on **Render** as a Docker web service — live at: **https://continuity-bgf2.onrender.com**
 
 `Dockerfile` builds the retrieval index at image build time (local embedding model, no API key needed for this step) and serves both the UI and API from one process. It reads `$PORT` at container start rather than a fixed port, since Render (like most PaaS platforms) assigns that dynamically — the process binds to whatever Render tells it to, not a hardcoded value. `render.yaml` declares the service as a Blueprint: Docker runtime, free plan, health check at `/api/health`, and `ANTHROPIC_API_KEY` marked `sync: false` so Render requires it to be entered directly in the dashboard rather than ever living in git.
 

@@ -1,10 +1,20 @@
 {
   "n_scenarios": 16,
-  "dry_run": true,
+  "dry_run": false,
   "retrieval": {
     "mean_precision_at_k": 0.5875,
     "mean_recall_at_k": 0.9375,
     "mean_mrr": 0.7083333333333334
+  },
+  "n_errored": 0,
+  "escalation_accuracy": 1.0,
+  "fab_bench_scores": {
+    "answer_relevance": 5,
+    "factual_accuracy": 4.923076923076923,
+    "completeness": 4.923076923076923,
+    "reasoning_clarity": 5,
+    "domain_specificity": 5,
+    "overall_mean": 4.969230769230769
   },
   "scenarios": [
     {
@@ -23,7 +33,24 @@
           "INC-AMX5200-014"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "Chamber 3's RF match is exhibiting the same slow-tune/reflected-power-spike signature (13s vs <8s normal, brief reflected power spike settling <2%) that was previously traced to a match box cooling fan failure causing thermal instability in the match network electronics. Although the match technically passes the tune interlock, this pattern is a known leading indicator of an unhealthy match and should be treated as a fault requiring action now rather than waiting for an outright failure, per prior scrap incident and SOP guidance.\n- Match box cooling fan degraded/failing, causing thermal instability in the match network electronics (root cause identified in a near-identical prior incident on this same tool) (confidence: high, sources: INC-AMX5200-014, SOP-AMX5200-001) -> Do not release chamber for production. Inspect and if needed replace the match box air cooling fan per SOP-AMX5200-001 Section 4 step 2. This exact fix (fan replacement) restored <8s tuning in the prior incident (INC-AMX5200-014 Resolution) and should be attempted first given the symptom match.\n- Loose/degraded RF cable connection (N-type connector) at match box input (confidence: medium, sources: SOP-AMX5200-001) -> Before escalating, re-seat the RF cable N-type connector at the match box input per SOP-AMX5200-001 Section 4 step 1, since this is called out as the most common cause of tuning faults and is a quick check to rule out before pursuing the fan.\n- Match capacitor (C1/C2) position drift beyond 10% of rolling 30-day average, indicating a mechanical/tuning degradation even though tune currently passes (confidence: medium, sources: SOP-AMX5200-001) -> Pull the last 30 days of recorded C1/C2 positions from the equipment log and compare current positions against the rolling average; if drift exceeds 10%, flag for preventive maintenance regardless of pass/fail status.\n- Intermittent RF match fault masked by a passing tune interlock \u2014 treating the slow tune/reflected power spike as merely cosmetic since it 'passes' is itself a risk factor for scrap, not a distinct hardware cause but a process/decision risk (confidence: high, sources: INC-AMX5200-014) -> Per the lesson learned in INC-AMX5200-014, do not run production lots through Chamber 3 until the fault is resolved, even though the interlock is passing. If this recurs more than twice this shift, escalate to equipment engineering per SOP-AMX5200-001 Section 4 step 3 rather than continuing to run lots.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the fault symptom, identifies the root cause, and gives clear actionable steps matching the specific scenario described.",
+          "factual_accuracy": "All claims (cooling fan root cause, reseating cable as common cause, capacitor drift check, escalation threshold, non-release policy) are accurately grounded in the retrieved SOP and incident log without fabrication.",
+          "completeness": "The answer covers the primary root cause (fan), the alternative check (cable), the secondary diagnostic (capacitor drift), and the critical policy point about not releasing the chamber despite passing interlock, matching the reference's key points and more.",
+          "reasoning_clarity": "The response is well-structured with a clear hypothesis-confidence-action format, logically prioritizing checks (reseat first per SOP order) while noting overall best mapping to fan failure.",
+          "domain_specificity": "Uses precise RF match terminology (reflected power, capacitor positions C1/C2, N-type connector, tuning interlock) consistent with plasma etch equipment domain knowledge."
+        }
+      }
     },
     {
       "id": "FS-002",
@@ -41,7 +68,24 @@
           "INC-AMX5200-021"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "Post-etch particle adders exceed the 15-adder release threshold on the AMX-5200 despite a clean-looking viewport and healthy RF match. This matches a previously documented incident where polymer buildup flaking from a chamber wall location not visible through the standard viewport was the root cause \u2014 the viewport check alone is insufficient to rule out wall deposition in that blind spot.\n- Polymer buildup/flaking on the chamber wall opposite the gas injector \u2014 a location not fully visible through the standard viewport angle \u2014 causing particle adders even though the viewport visual check (Level 2 threshold) passes. This is a known tacit-knowledge failure mode: standard visual inspection misses this specific spot, especially after fluorocarbon-rich recipes were run recently. (confidence: high, sources: INC-AMX5200-021) -> Perform a borescope inspection of the chamber wall directly opposite the gas injector (not just the standard viewport check). If polymer buildup is found there, perform an out-of-cycle wet clean focused on that specific wall area, then re-run the seasoning wafer to confirm adders return below 15 (baseline <10 per prior resolution).\n- Recent wet clean was performed but seasoning/conditioning step after the clean may not have adequately stabilized the chamber walls, or the standard pre-startup viewport check (SOP-AMX5200-001 Step 2.3) falsely cleared the chamber since buildup was below Level 2 threshold in the visible area only. (confidence: medium, sources: SOP-AMX5200-001) -> Re-run the 15-minute seasoning recipe per SOP-AMX5200-001 Section 5 and verify adder count before release; if still elevated, escalate to borescope inspection rather than relying solely on the viewport check.\n- Recipe history: fluorocarbon-rich (CF4-based) etch recipes run in the prior period preferentially deposit polymer at the wall location opposite the injector, increasing risk of flaking independent of overall wet-clean cadence. (confidence: medium, sources: INC-AMX5200-021) -> Review recent recipe run history for heavy CF4/fluorocarbon usage; if confirmed, flag chamber for targeted wall-area cleaning proactively after such recipe sequences, not just standard wet-clean scheduling.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the symptom (elevated post-etch particle adders despite clean viewport and healthy RF match) and provides a targeted diagnosis and remediation matching the query.",
+          "factual_accuracy": "All claims (polymer buildup opposite the injector, viewport blind spot, fluorocarbon recipe link, borescope inspection, targeted wet clean, baseline <10 adders) are directly supported by the retrieved incident log and SOP context with no fabrication.",
+          "completeness": "The answer covers root cause, viewport limitation, recipe history contribution, and full corrective action sequence (borescope, targeted wet clean, re-seasoning verification), matching and slightly exceeding the reference's scope.",
+          "reasoning_clarity": "The response is logically structured with clear causal chain, confidence levels, and cited sources, making the diagnostic reasoning easy to follow.",
+          "domain_specificity": "Uses precise fab terminology (seasoning wafer, adder threshold, RF match, fluorocarbon recipe, borescope inspection) consistent with semiconductor plasma etch tool operations and SOP structure."
+        }
+      }
     },
     {
       "id": "FS-003",
@@ -59,7 +103,24 @@
           "INC-AMX5200-014"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "The reported symptom \u2014 a subtle increase in higher-pitched whine specifically during the chamber purge cycle on Chamber 3, with pressure and RF match currently reading normal \u2014 matches a known early-warning signature for foreline dry pump bearing wear documented only in a senior engineer's exit knowledge-capture interview. This precedes any measurable pressure or RF match deviation by weeks, so the fact that match/pressure look fine right now does not rule it out; it's actually consistent with catching the issue early. A secondary, currently-unsupported-by-live-data possibility is an emerging match box cooling fan degradation, since that failure mode can eventually masquerade similarly, though it would be expected to show up as match tuning slowness, not purge-cycle acoustic change.\n- Early-stage foreline dry pump bearing wear \u2014 the change in pitch (higher-frequency whine) during the purge cycle specifically is a documented tacit-knowledge early indicator of bearing degradation, occurring 2-3 weeks before any pressure or RF match signature appears. This matches the reported symptom (purge cycle specifically, normal pressure/match) almost exactly. (confidence: high, sources: KI-AMX5200-001) -> Schedule a proactive foreline pump inspection on Chamber 3 now, before waiting for pressure or match deviations to appear. Do not wait for the automatic interlock or match-fault signature, since by the SOP's own instrumentation this issue is invisible until much more advanced. Log the acoustic observation in the chamber's maintenance history since no sensor currently captures it.\n- Match box cooling fan degradation (as in INC-AMX5200-014) \u2014 a known failure mode that produces slowed/destabilized RF tuning without tripping automatic interlocks. Not currently indicated by present RF match readings, but flagged here because engineers investigating a match-fault presentation on this tool have historically spent time ruling this out before finding the actual pump issue. (confidence: low, sources: INC-AMX5200-014) -> No immediate action needed since RF match is currently normal; if match tuning times or reflected power begin to drift (>8s tuning, reflected power spikes near 5%), inspect match box cooling fan condition, but prioritize the pump inspection first given the actual symptom reported.\n- Chamber wall polymer buildup/flaking (opposite gas injector) \u2014 unlikely to explain an acoustic/pitch change during purge, but worth noting as a separate known blind spot on this tool if particle counts are later found elevated, since it also produces normal-looking match performance. (confidence: low, sources: INC-AMX5200-021, KI-AMX5200-001) -> Not indicated by the current symptom (no particle or viewport data reported), but if a wet clean has occurred recently and heavy fluorocarbon recipes have run, consider a borescope check opposite the gas injector as routine hygiene \u2014 unrelated to the purge-cycle whine itself.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the exact symptom described (purge-cycle whine, normal pressure/RF match on Chamber 3) and gives an actionable recommendation matching the query intent.",
+          "factual_accuracy": "All claims are correctly grounded in the retrieved context, particularly KI-AMX5200-001's tacit knowledge and correctly cites INC-AMX5200-014 as a distinct, lower-confidence secondary possibility without misattributing details.",
+          "completeness": "The answer captures the primary diagnosis with full nuance (2-3 week lead time, no sensor coverage, logging need) and also appropriately includes lower-confidence secondary/tertiary possibilities from the context for thoroughness.",
+          "reasoning_clarity": "The response is well-structured with clear confidence levels, source citations, and logical explanation of why normal readings don't rule out the issue, making the reasoning easy to follow.",
+          "domain_specificity": "The answer uses precise fab terminology (foreline dry pump, RF match tuning, reflected power, interlocks, seasoning monitor) and correctly reflects the semiconductor equipment maintenance context."
+        }
+      }
     },
     {
       "id": "FS-004",
@@ -77,7 +138,24 @@
           "SOP-VNT300-002"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "\n- Single degraded heater zone masked by the control thermocouple, causing susceptor temperature non-uniformity with an edge-high signature \u2014 this matches the exact symptom pattern (three consecutive failed monitor wafers, edge-high, showerhead and electrode gap both passed) documented in a prior incident on this tool. (confidence: high, sources: INC-VNT300-017, SOP-VNT300-002) -> Per SOP-VNT300-002 Section 5, check susceptor temperature uniformity next since showerhead and electrode gap have already passed. Specifically map individual heater zone temperatures independently rather than relying solely on the control thermocouple reading, as a single degraded zone can be masked by it. Cross-reference against INC-VNT300-017 for the resolution steps taken previously.\n- RF electrode gap drift beyond tolerance \u2014 the SOP identifies this as the leading cause of center-to-edge thickness non-uniformity on this tool family, though it was reported as having passed inspection. (confidence: low, sources: SOP-VNT300-002) -> Re-verify the electrode gap measurement with the calibrated gap gauge to confirm it is truly within 0.05mm of the recipe-specified gap; given this is the leading known cause of this failure mode, double-check the inspection was performed correctly and gauge calibration is current before ruling it out entirely.\n- Showerhead hole distortion from prior in-situ probing causing gradual uniformity drift \u2014 however this incident's symptom was a gradual drift (1.1% to >2.0% over three days), not an abrupt edge-high failure on three consecutive wafers, so it is a weaker match. (confidence: low, sources: INC-VNT300-009, SOP-VNT300-002) -> Confirm no in-situ probing of the showerhead has occurred recently; if it has, inspect hole diameters in the outer ring for distortion despite the showerhead having passed visual blockage inspection, since distortion may not be caught by a simple blockage check.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 4,
+        "completeness": 4,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The primary recommendation directly addresses the fault (edge-high uniformity with passed showerhead/gap checks) and matches the reference's core guidance to check the thermocouple per SOP-VNT300-002 Section 5.",
+          "factual_accuracy": "The main claim is well-supported by INC-VNT300-017 and SOP-VNT300-002, but it omits the specific quantitative detail from the reference (control TC within 1\u00b0C vs ~6\u00b0C actual surface deviation), and the secondary/tertiary hypotheses, while sourced, are speculative additions not asserted as fact in the retrieved context (e.g., re-verifying gap despite passing, or unconfirmed probing) which slightly dilutes accuracy focus.",
+          "completeness": "Covers the key root cause and remediation step matching the reference, but doesn't include the specific incident detail (1\u00b0C vs ~6\u00b0C) that grounds the diagnosis, and adds extra alternative hypotheses not present in the reference answer, which could be seen as either helpful hedging or scope creep.",
+          "reasoning_clarity": "The answer is well-structured with clear confidence levels, sourcing, and actionable next steps for each hypothesis, making the reasoning easy to follow.",
+          "domain_specificity": "Uses precise fab terminology (susceptor temperature uniformity, heater zone mapping, RF electrode gap, gap gauge tolerance) and correctly ties recommendations to specific SOP sections and incident logs, reflecting strong domain grounding."
+        }
+      }
     },
     {
       "id": "FS-005",
@@ -95,7 +173,24 @@
           "SOP-VNT300-002"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "\n- Seasonal (monsoon) ambient humidity increase is accelerating showerhead hole blockage rate beyond what the standard weekly PM cadence was designed to catch. This is documented tacit knowledge from a rotating senior engineer, not yet captured in the SOP, and directly matches the reported symptom of the 3% threshold being crossed faster than the weekly inspection interval during monsoon season. (confidence: high, sources: KI-VNT300-001) -> Immediately shift showerhead inspection cadence from weekly to every 4-5 days for the duration of monsoon season, per the informal practice described in KI-VNT300-001. Recommend formally amending SOP-VNT300-002 to add a seasonal inspection interval so this isn't dependent on shift memory going forward.\n- Working theory (unproven) that ambient moisture is increasing precursor gas line moisture content upstream of the showerhead, altering deposition behavior at the holes and accelerating edge-ring blockage buildup. (confidence: low, sources: KI-VNT300-001) -> Since this mechanism is explicitly flagged as an unvalidated theory, consider logging gas line moisture/dew point readings during monsoon season alongside blockage measurements to test the correlation. Do not treat as confirmed root cause, but track it to build an evidence base.\n- Normal edge-of-showerhead deposition effects (outer ring holes) are the baseline known blockage mechanism per SOP; monsoon conditions may simply be pushing this baseline process faster, not introducing a new failure mode. (confidence: medium, sources: SOP-VNT300-002) -> During interim shortened inspections, pay particular attention to outer ring hole blockage as called out in the SOP, since this is the documented most-common blockage location; use this to confirm whether monsoon acceleration is following the same known pattern or a different one.\n- Risk of misdiagnosis: if the shortened inspection interval is not followed and blockage crosses threshold unnoticed, resulting uniformity drift is likely to be initially misattributed to the susceptor heater failure mode (INC-VNT300-017) rather than showerhead blockage, delaying correct diagnosis. (confidence: medium, sources: KI-VNT300-001) -> Flag on-shift engineers and troubleshooting checklists that during monsoon season, showerhead blockage should be ruled out as a cause of uniformity drift before defaulting to the susceptor heater failure mode investigation.\n- Caution: do not respond to faster blockage accumulation by attempting in-situ probing to clear holes between PM cycles \u2014 this has previously caused hole diameter distortion and a uniformity drift incident. (confidence: high, sources: SOP-VNT300-002, INC-VNT300-009) -> Reinforce to all technicians, especially newer staff, that in-situ probing remains prohibited regardless of inspection frequency; if blockage is found, schedule a full showerhead swap per SOP rather than attempting a stopgap clear.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the monsoon-driven showerhead blockage issue and provides an immediate actionable cadence change matching the query.",
+          "factual_accuracy": "All claims (4-5 day cadence, moisture theory, edge-ring blockage, probing prohibition, INC-009/017 references) are accurately drawn from the retrieved context with no fabrication.",
+          "completeness": "It captures the core recommendation, the unproven mechanism caveat, the SOP baseline blockage pattern, misdiagnosis risk with the heater incident, and the probing prohibition, mirroring and exceeding the reference answer's scope.",
+          "reasoning_clarity": "The answer is well-structured with clear confidence levels, source attributions, and distinct actionable recommendations for each point.",
+          "domain_specificity": "Uses precise fab terminology (PM cadence, edge-ring blockage, dew point, uniformity drift) and correctly ties recommendations to specific SOP/incident/interview IDs, reflecting strong domain grounding."
+        }
+      }
     },
     {
       "id": "FS-006",
@@ -113,7 +208,24 @@
           "SOP-ORB7-003"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "\n- Retaining ring wear causing altered pressure distribution at the wafer edge, producing a gradual removal rate decline over days-to-weeks that is masked by passing pad conditioning and slurry qualification checks (confidence: high, sources: INC-ORB7-011, SOP-ORB7-003) -> Check retaining ring wear now, ahead of its normal PM interval \u2014 inspect for wear/thinning and measure edge-zone removal rate (edge-weighted decline pattern) on monitor wafers to confirm. This matches a known prior incident (INC-ORB7-011) with an identical two-week gradual decline to -9% despite passing pad/slurry checks, and is explicitly called out in SOP-ORB7-003 Section 4 as the next check when this exact symptom pattern occurs.\n- Pad glazing not caught by conditioning pass/fail check \u2014 glazed pad surface reduces asperity and removal rate even when conditioning time/pressure is nominally correct (confidence: low, sources: SOP-ORB7-003) -> Visually inspect pad for glazing (smooth/shiny surface) and verify pad wafer-count against the qualified replacement limit rather than relying on calendar time or visual condition alone; replace pad if at/near count limit. Note: this mechanism typically manifests as decline within a shift rather than a slow multi-week drift, so treat as secondary check pending retaining ring inspection.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the fault by identifying retaining ring wear as the primary cause and specifying the exact corrective action requested (inspect/replace ahead of PM), matching the reference answer's core recommendation.",
+          "factual_accuracy": "All claims (edge-weighted decline, masked by passing pad/slurry checks, matching INC-ORB7-011 at -9%, SOP-ORB7-003 Section 4 guidance) are accurately grounded in the retrieved context with no fabrication.",
+          "completeness": "The answer covers the primary root cause, the specific incident reference, the corrective action, and also thoughtfully addresses the secondary pad glazing hypothesis while correctly noting it's less consistent with the multi-week pattern, going beyond the reference answer's scope.",
+          "reasoning_clarity": "The response is clearly structured with confidence levels, sourcing, and explicit reasoning distinguishing why retaining ring wear is favored over pad glazing based on the temporal pattern.",
+          "domain_specificity": "The answer uses precise CMP terminology (edge-zone removal rate, asperity, wafer-count based pad life, pressure distribution) appropriate for a semiconductor fab engineer audience."
+        }
+      }
     },
     {
       "id": "FS-007",
@@ -131,7 +243,24 @@
           "INC-ORB7-022"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "The symptom pattern (low first-wafer removal rate after weekend shutdown, with tank-side slurry sensor reading normal) exactly matches a previously logged incident on this same tool. The tank-side sensor is known to be blind to line restrictions that develop downstream of it, particularly after extended idle periods when settled slurry particles accumulate in the supply line between the tank and the polishing head.\n- Partial slurry line restriction between tank and point-of-use sensor caused by settled particle buildup during the weekend idle period \u2014 undetectable by the tank-side flow sensor. (confidence: high, sources: INC-ORB7-022) -> Check flow at the point-of-use (polishing head) sensor per SOP-ORB7-003 rather than relying on tank-side reading. If point-of-use flow is below setpoint (previously seen ~12% low), perform an extended slurry line purge (15 min instead of standard 5 min) to clear the restriction, then re-verify point-of-use flow before running production wafers.\n- Standard 5-minute purge routine is insufficient after extended idle periods (weekend/holiday/unplanned downtime), allowing residual restriction to persist into first-wafer processing. (confidence: high, sources: INC-ORB7-022) -> Update start-of-shift procedure to trigger an extended purge (15 min) automatically whenever idle time exceeds a threshold (e.g., >48 hrs), rather than defaulting to the standard 5-minute purge.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the fault symptom and provides an actionable diagnosis and remediation path matching the query.",
+          "factual_accuracy": "All claims (tank-side sensor blindness, ~12% low point-of-use flow, 5 min vs 15 min purge, SOP-ORB7-003 reference) are fully consistent with the retrieved incident log and reference answer.",
+          "completeness": "Covers root cause, detection method, corrective purge duration, and even adds a proactive suggestion to update SOP thresholds, matching or exceeding the reference's scope.",
+          "reasoning_clarity": "The response is logically structured with clear cause-effect statements and confidence/source annotations, making the reasoning easy to follow.",
+          "domain_specificity": "Uses precise CMP tool terminology (point-of-use sensor, slurry line purge, SOP reference, incident ID) appropriate for a semiconductor fab fault-diagnosis context."
+        }
+      }
     },
     {
       "id": "FS-008",
@@ -149,7 +278,24 @@
           "INC-HLX2100-006"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "\n- Wafer stage thermal drift caused by facility chiller setpoint change, producing an overlay signature that mimics a lens alignment fault (confidence: high, sources: INC-HLX2100-006, SOP-HLX2100-004) -> Before proceeding with lens realignment, pull the wafer stage temperature stability logs for the preceding 6-12 hours and check for any recent facility chiller setpoint changes. This is an almost identical case to INC-HLX2100-006 (+4.5nm overlay error, same tool), where a 0.4\u00b0C stage chuck drift from a chiller setpoint change caused the exact same signature and was resolved in ~2 hours by correcting the setpoint, with no lens work needed.\n- Lens alignment fault (original hypothesis based on visual pattern match to past lens issues) (confidence: low, sources: INC-HLX2100-006) -> Do not schedule lens realignment yet. Per SOP-HLX2100-004 Section 2 and the lesson learned in INC-HLX2100-006, stage thermal drift is the more frequent root cause of this exact overlay signature on this tool family and is far cheaper to rule out. Only proceed with lens realignment if stage temperature logs are stable and no thermal/chiller anomaly is found.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the fault by recommending checking stage temperature logs before lens realignment, exactly matching the situation described.",
+          "factual_accuracy": "All facts (0.4\u00b0C drift, chiller setpoint change, 2-hour resolution, no lens work needed, SOP section reference) match the retrieved context and reference answer precisely with no fabrication.",
+          "completeness": "Covers both the correct root cause (thermal drift) and appropriately downgrades the original lens hypothesis, citing the SOP and incident lesson learned, matching the reference answer's key points.",
+          "reasoning_clarity": "The two-hypothesis structure with confidence levels and clear recommended actions makes the reasoning easy to follow and logically ordered.",
+          "domain_specificity": "Uses precise fab terminology (overlay calibration, stage chuck, chiller setpoint, SOP section) and correctly cites specific incident and SOP IDs, reflecting strong domain grounding."
+        }
+      }
     },
     {
       "id": "FS-009",
@@ -167,7 +313,24 @@
           "INC-HLX2100-013"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "The symptom pattern\u2014CD excursions isolated to a single reticle across two lots ~1 week apart, with all other reticles on the same layer/scanner in spec\u2014is an exact match to a previously documented incident (INC-HLX2100-013) involving reticle pod contamination. Because the excursion is reticle-specific rather than tool-wide, this points away from a scanner-level root cause and toward the reticle/pod itself.\n- Particle contamination on the pellicle-side of the reticle pod, causing localized CD excursions specific to that reticle (confidence: high, sources: INC-HLX2100-013) -> Escalate directly to reticle pod inspection (do not start with scanner-side investigation). Pull the reticle and inspect the pellicle-side of its pod for particle contamination, per the pattern-recognition lesson learned in INC-HLX2100-013. If contamination is confirmed, clean/re-pelliclize the reticle and replace the pod, then verify with subsequent lots.\n- Reticle-specific defect/contamination is the leading cause of hard-to-reproduce, reticle-isolated excursions per SOP guidance (confidence: high, sources: SOP-HLX2100-004) -> Follow SOP-HLX2100-004 investigation path for reticle-isolated excursions: confirm the excursion is confined to this single reticle (already confirmed here), then proceed to pod/reticle inspection rather than tool-wide troubleshooting.\n- Tool-level systematic scanner issue (e.g., dose, focus, or overlay drift affecting all reticles) (confidence: low, sources: SOP-HLX2100-004) -> This cause is not currently supported by the evidence, since the excursion is isolated to one reticle and other reticles on the same layer/scanner are in spec \u2014 SOP-HLX2100-004 explicitly reserves tool-level escalation for cases where excursions recur across multiple reticles and lots in the same shift, which is not the case here. No action needed unless the pattern changes to affect multiple reticles.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the fault symptom and provides an actionable diagnosis and remediation path matching the query.",
+          "factual_accuracy": "All claims (pod contamination, pellicle-side particles, clean/re-pelliclize, pod replacement, escalation logic) are fully supported by INC-HLX2100-013 and SOP-HLX2100-004 with no fabricated details.",
+          "completeness": "The answer covers the root cause, investigation steps, resolution, and correctly rules out the tool-level alternative per SOP guidance, matching and slightly expanding on the reference.",
+          "reasoning_clarity": "The response is well-structured with clear cause-to-action mapping and explicit reasoning for why the scanner-level cause is excluded.",
+          "domain_specificity": "Uses precise semiconductor lithography terminology (pellicle, reticle pod, CD excursion, dose/focus/overlay drift) consistent with the fab domain and source documents."
+        }
+      }
     },
     {
       "id": "FS-010",
@@ -185,7 +348,24 @@
           "INC-HLX2100-006"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "Symptom pattern (marginal overlay calibration failures, only slightly off stage temperature logs, time-of-day/etch-bay correlation) most closely matches a known but undocumented cross-tool facility interaction between the etch bay's AMX-5200 chambers and the Helios scanner's stage temperature stability, captured only in tacit knowledge from a rotating senior engineer. A related, better-documented root cause (chiller setpoint-driven stage thermal drift) can compound or be mistaken for this, and should be ruled out in parallel. Optical/lens misalignment is a less likely cause given the described signature.\n- Cross-tool facility interaction: simultaneous high-RF-power plasma strikes on multiple AMX-5200 etch chambers cause a brief voltage sag on a shared facility circuit, producing a small stage temperature transient on the Helios scanner. This is usually too small to fail overlay outright but adds noise that pushes an already-marginal calibration over spec \u2014 matching the 'fails more during certain hours' and 'etch bay busy' pattern exactly. (confidence: high, sources: KI-HLX2100-001) -> Cross-reference timestamps of marginal overlay calibration failures against etch bay (AMX-5200) high-power recipe start times/RF strike logs for the same hours. If correlated, raise this as a joint facilities/etch/litho issue (shared power distribution circuit) since it currently has no formal owner \u2014 request facilities investigate decoupling or conditioning the shared circuit feeding the scanner.\n- Underlying stage chuck thermal drift (e.g., from a facility chiller setpoint change or drift) making the calibration marginal/borderline in the first place, which the etch-bay voltage sag then pushes over the failure threshold. Produces an overlay signature nearly identical to a lens fault at moderate magnitude. (confidence: medium, sources: SOP-HLX2100-004, INC-HLX2100-006) -> Per SOP-HLX2100-004 Section 2, pull wafer stage temperature stability logs for the preceding 6+ hours before considering any lens work. Check for recent facility chiller setpoint changes. If drift is found, correct chiller setpoint and re-verify stage temperature stabilizes (~2 hrs) before re-running overlay calibration.\n- Lens/optical alignment fault (confidence: low, sources: INC-HLX2100-006) -> Do not schedule lens realignment yet. Only pursue this if stage temperature logs are clean and no etch-bay correlation is found, since prior incident showed this cause was ruled out and realignment was unnecessary downtime.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "Directly addresses the marginal overlay failure, slight stage temp deviation, and etch-bay correlation described in the fault, matching the reference diagnosis precisely.",
+          "factual_accuracy": "All claims (voltage sag from AMX-5200 RF strikes, stage temp transient, chiller-driven thermal drift as compounding factor, lens fault being unlikely) are accurately drawn from the retrieved KI, SOP, and incident log without fabrication.",
+          "completeness": "Covers the primary cross-tool interaction cause, the secondary chiller/thermal drift compounding factor, the recommended correlation check, and appropriately deprioritizes lens realignment, mirroring and extending the reference's guidance.",
+          "reasoning_clarity": "Well-structured with clear primary/secondary/tertiary hypotheses, confidence levels, sources, and concrete next-step actions in logical order.",
+          "domain_specificity": "Uses precise tool names, SOP/incident IDs, procedural steps (chuck stabilization time, \u00b13nm spec context), and fab-specific facility/ownership nuances appropriately."
+        }
+      }
     },
     {
       "id": "FS-011",
@@ -203,7 +383,24 @@
           "INC-TLVF800-008"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "Symptom pattern (slow, multi-week worsening of top-to-bottom non-uniformity with all heater zones reading within spec) closely matches a previously documented gas injector flow drift issue on the ThermaLine VF-800 family, rather than a heater zone fault. Prior incident and SOP guidance both indicate this is the expected root cause for this exact symptom signature, and both explicitly warn against defaulting to heater diagnostics first.\n- Slow drift in gas injector flow distribution (e.g., orifice wear) causing gradual top-to-bottom thickness non-uniformity, with heater zones remaining in spec throughout. (confidence: high, sources: INC-TLVF800-008, SOP-TLVF800-005) -> Perform gas injector flow calibration check against qualified baseline immediately (do not wait on heater diagnostics). Compare current flow distribution to baseline \u2014 prior case found ~8% drift consistent with orifice wear. If drift found, recalibrate or replace injector components and re-run monitor wafers to confirm uniformity returns below 3% spec.\n- Heater zone degradation masked by control thermocouple reading (thermocouple reads in-spec while actual zone temperature has drifted). (confidence: low, sources: INC-VNT300-017) -> Only pursue if injector calibration check comes back clean: perform secondary/independent temperature probe verification on each heater zone to rule out a thermocouple-masked heater fault, as was found on a different tool (Vantage PECVD 300). This is a lower-probability cause here given all zones already read within spec and the gradual multi-week pattern is a stronger match for injector drift.\n- Boat loading or particle-related issue. (confidence: low, sources: SOP-TLVF800-005) -> Deprioritize \u2014 SOP notes this cause typically presents as a sudden, single-run non-uniformity event, not the gradual multi-week trend described here. No further action needed unless a sudden excursion is later observed.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the fault description, correctly identifying gas injector flow drift as the primary cause and recommending immediate action consistent with the reference.",
+          "factual_accuracy": "All cited facts (8% drift, orifice wear, SOP section, incident numbers, VNT300 secondary probe check) accurately reflect the retrieved context with no fabrication.",
+          "completeness": "The answer covers the primary root cause, correctly deprioritizes the heater-masking and boat-loading alternatives with appropriate reasoning, matching and even exceeding the reference's scope.",
+          "reasoning_clarity": "The response is logically structured with clear confidence levels, prioritized actions, and explicit reasoning for ruling out alternative causes.",
+          "domain_specificity": "Uses precise fab terminology (injector flow calibration, orifice wear, control thermocouple, boat loading) and correctly references tool-specific SOPs and incident logs."
+        }
+      }
     },
     {
       "id": "FS-012",
@@ -221,7 +418,24 @@
           "INC-TLVF800-008"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "The overnight low-priority N2 supply pressure alarm on the ThermaLine VF-800 is most likely tied to a known, undocumented facility N2 header cycling pattern rather than a furnace-side fault. This tacit knowledge from a rotating senior engineer directly matches the symptom and should be prioritized over generic furnace troubleshooting. A genuine furnace-side issue remains possible and should not be dismissed outright if the alarm pattern deviates from the known facility cycling signature.\n- Facility nitrogen header pressure naturally cycles overnight due to demand from other systems sharing the same header, and the furnace's low-priority pressure deviation alarm is sensitive enough to catch this normal cycling, causing it to fire and self-clear without any real furnace-side problem. This is an informal, tribal-knowledge pattern known to experienced overnight engineers but not documented anywhere, and is exactly the kind of insight at risk of being lost during rotation. (confidence: high, sources: KI-TLVF800-001) -> Before escalating each occurrence, check whether the alarm timing/duration lines up with the known overnight facility N2 cycling pattern (correlate alarm timestamps with facility header pressure logs if available). If it matches the normal cycling signature, log it as facility-cycling-correlated and do not escalate. Separately, raise this informal pattern to facilities engineering and equipment engineering to get it formally documented (e.g., as an addendum to the furnace alarm SOP) so it's no longer dependent on tribal knowledge passed shift-to-shift.\n- A genuine furnace-side nitrogen supply issue (e.g., regulator, valve, or local supply fault) causing an atypical pressure deviation that only coincidentally resembles the benign cycling pattern. (confidence: low, sources: KI-TLVF800-001) -> Only escalate to a furnace-side check if the alarm's timing or duration differs from the established facility cycling pattern (e.g., occurs outside the usual overnight window, lasts longer, or has different magnitude). If it deviates, proceed with a furnace-side N2 supply/regulator inspection per standard escalation procedure.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the overnight N2 pressure alarm self-resolving issue and gives an actionable diagnosis path matching the fault description precisely.",
+          "factual_accuracy": "All claims (facility N2 cycling pattern, overnight prominence, informal/tribal nature, correlation-then-escalate logic) are accurately drawn from KI-TLVF800-001 with no fabricated details.",
+          "completeness": "Covers the core explanation, the check-before-escalate guidance, the caveat that real furnace issues remain possible, and even adds the valuable suggestion to formally document the pattern, matching and slightly extending the reference.",
+          "reasoning_clarity": "The response is well-structured with clear cause identification, confidence levels, and distinct action steps for both the benign and genuine-fault scenarios.",
+          "domain_specificity": "Uses precise fab terminology (facility N2 header, pressure deviation alarm, escalation procedure) and correctly ties the issue to the specific furnace platform and source document."
+        }
+      }
     },
     {
       "id": "FS-013",
@@ -239,7 +453,24 @@
           "INC-TLVF800-019"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": false,
+      "escalation_correct": true,
+      "generated_answer": "The elevated particle counts observed over the last two runs match a well-documented pattern for this exact tool: a quartz boat with a hairline crack, even after cleaning and passing visual inspection, can continue to generate residual particles for 2-3 subsequent runs before returning to baseline. This matches a prior incident on the same ThermaLine VF-800 furnace almost exactly.\n- Residual particle generation from the cleaned hairline crack site in the quartz boat \u2014 a cleaned crack does not immediately stop generating particles; elevated counts commonly persist for 2-3 runs after cleaning before returning to normal, even though the boat passes visual inspection. (confidence: high, sources: INC-TLVF800-019) -> Do not continue run-by-run monitoring hoping it stabilizes. Per lesson learned and prior resolution, retire the cracked boat now rather than risk further degraded runs; per SOP-TLVF800-005, treat elevated risk as persisting for the following 2-3 runs even after a crack has been visually cleaned. Pull the boat from rotation and replace with a certified crack-free boat.",
+      "judge_scores": {
+        "answer_relevance": 5,
+        "factual_accuracy": 5,
+        "completeness": 5,
+        "reasoning_clarity": 5,
+        "domain_specificity": 5,
+        "justifications": {
+          "answer_relevance": "The answer directly addresses the fault scenario (elevated particles after using a cracked-but-cleaned boat) and gives a clear actionable recommendation matching the query.",
+          "factual_accuracy": "All claims (2-3 run residual particle risk, boat retirement recommendation, SOP-TLVF800-005 reference) are accurately drawn from INC-TLVF800-019 with no fabricated details.",
+          "completeness": "The answer covers the root cause, the lesson learned, the SOP guidance, and the concrete recommended action (retire and replace boat), matching the reference answer's key points.",
+          "reasoning_clarity": "The response is logically structured, explaining the mechanism (residual particle generation), citing evidence, and then stating the recommended action clearly.",
+          "domain_specificity": "Uses precise fab terminology (quartz boat, hairline crack, monitor wafers, particle adders, SOP reference) appropriate for semiconductor fault diagnosis."
+        }
+      }
     },
     {
       "id": "FS-014",
@@ -257,7 +488,10 @@
           "INC-ORB7-022"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": true,
+      "escalation_correct": true,
+      "generated_answer": "Knowledge base coverage is insufficient for a grounded diagnosis. This has been logged as a knowledge gap for follow-up. Recommend escalating to a senior equipment engineer rather than guessing. Triage reasoning: The fault concerns a Wet Bench Station's acid bath temperature controller giving erratic/jumping readings. All retrieved passages pertain to entirely different equipment: the Vantage PECVD 300 Deposition System (susceptor heater zone/thermocouple issues affecting film uniformity) and the Orbis CMP-7 Polisher (slurry flow/removal rate issues). None of these address wet bench acid bath temperature control, controller electronics, sensor calibration, or erratic temperature readings. While the PECVD passages superficially involve 'temperature' and 'thermocouples,' the failure mode (heater zone degradation masked by control thermocouple, causing uniformity issues) is not analogous to a temperature controller showing erratic/jumping readings on a wet bench. Citing these would be a stretch not grounded in the actual equipment or fault mode. The knowledge base does not appear to contain relevant SOPs or incident logs for wet bench acid bath temperature controllers."
     },
     {
       "id": "FS-015",
@@ -275,7 +509,10 @@
           "INC-ORB7-011"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": true,
+      "escalation_correct": true,
+      "generated_answer": "Knowledge base coverage is insufficient for a grounded diagnosis. This has been logged as a knowledge gap for follow-up. Recommend escalating to a senior equipment engineer rather than guessing. Triage reasoning: The fault is a new grinding noise from the platen motor housing, explicitly unrelated to the conditioning disk \u2014 this points to a mechanical/electromechanical issue (e.g., bearing wear, motor coupling, belt, or drive train fault) in the platen drive assembly. All retrieved passages, however, are about pad conditioning, slurry qualification, removal rate drift, retaining ring wear, and slurry lot seasonality affecting particle/adder counts \u2014 none of which concern platen motor mechanics, noise, vibration, or drive train components. There is no SOP or incident log here addressing motor/bearing acoustic symptoms. The knowledge base content is topically related to the same tool (Orbis CMP-7) but addresses an entirely different failure mode (process/removal-rate chemistry-mechanical issues vs. a mechanical noise fault in the motor housing). Citing any of these passages to diagnose a grinding noise would be a stretch not supported by the evidence. This should be flagged as insufficient \u2014 the knowledge base doesn't appear to cover platen motor mechanical/acoustic faults."
     },
     {
       "id": "FS-016",
@@ -293,7 +530,10 @@
           "SOP-HLX2100-004"
         ]
       },
-      "score_gate_would_escalate": false
+      "score_gate_would_escalate": false,
+      "escalated": true,
+      "escalation_correct": true,
+      "generated_answer": "Knowledge base coverage is insufficient for a grounded diagnosis. This has been logged as a knowledge gap for follow-up. Recommend escalating to a senior equipment engineer rather than guessing. Triage reasoning: The fault described is a checksum error in the reticle library management software when loading job files \u2014 a software/data-integrity issue with the job file loading system. All retrieved passages, however, concern physical reticle handling issues (pod contamination causing CD/overlay excursions, pellicle exposure counts, overlay calibration and stage thermal drift). None of them address reticle library software, checksum validation, job file loading, or IT-related failure modes. This is a different failure domain (software/IT) than what the knowledge base excerpts cover (physical reticle/pod and overlay issues). Using these passages to ground a diagnosis would require stretching unrelated content, so the evidence is insufficient \u2014 the knowledge base does not appear to cover this specific software/checksum issue."
     }
   ]
 }

@@ -33,9 +33,16 @@ def _format_answer_text(result: dict) -> str:
     answer = result.get("answer", {})
     lines = [answer.get("summary", "")]
     for cause in answer.get("causes", []):
+        if not isinstance(cause, dict):
+            # Last-resort guard: continuity.llm's schema-driven coercion
+            # repairs the malformed shapes observed in practice, but LLM
+            # output is fundamentally non-deterministic — skip rather than
+            # crash the whole eval run on a residual, unrepairable one.
+            lines.append(f"- [unparseable cause entry, skipped: {cause!r}]")
+            continue
         lines.append(
-            f"- {cause['cause']} (confidence: {cause['confidence']}, "
-            f"sources: {', '.join(cause.get('cited_sources', []))}) -> {cause['recommended_action']}"
+            f"- {cause.get('cause', '?')} (confidence: {cause.get('confidence', '?')}, "
+            f"sources: {', '.join(cause.get('cited_sources', []))}) -> {cause.get('recommended_action', '?')}"
         )
     return "\n".join(lines)
 
@@ -72,21 +79,28 @@ def run_eval(dry_run: bool = False, out_path: str = "eval_results.json") -> dict
         }
 
         if not dry_run:
-            result = run_continuity_agent(scenario["query"], scenario.get("equipment"))
-            escalated = bool(result.get("escalated"))
-            record["escalated"] = escalated
-            record["escalation_correct"] = escalated == scenario["expects_escalation"]
-            generated_answer_text = _format_answer_text(result)
-            record["generated_answer"] = generated_answer_text
+            try:
+                result = run_continuity_agent(scenario["query"], scenario.get("equipment"))
+                escalated = bool(result.get("escalated"))
+                record["escalated"] = escalated
+                record["escalation_correct"] = escalated == scenario["expects_escalation"]
+                generated_answer_text = _format_answer_text(result)
+                record["generated_answer"] = generated_answer_text
 
-            if not scenario["expects_escalation"]:
-                judged = judge_answer(
-                    query=scenario["query"],
-                    generated_answer=generated_answer_text,
-                    reference_answer=scenario["reference_answer"],
-                    context=_format_context(retrieved),
-                )
-                record["judge_scores"] = judged
+                if not scenario["expects_escalation"]:
+                    judged = judge_answer(
+                        query=scenario["query"],
+                        generated_answer=generated_answer_text,
+                        reference_answer=scenario["reference_answer"],
+                        context=_format_context(retrieved),
+                    )
+                    record["judge_scores"] = judged
+            except Exception as exc:  # noqa: BLE001 - eval harness must not die on one bad scenario
+                # LLM output is fundamentally non-deterministic; continuity.llm
+                # repairs the malformed shapes observed empirically, but a
+                # residual failure here should surface as one scenario's
+                # result, not take down the other 15 scenarios' results with it.
+                record["error"] = f"{type(exc).__name__}: {exc}"
 
         per_scenario.append(record)
 
@@ -109,8 +123,14 @@ def _aggregate(records: list[dict[str, Any]], dry_run: bool) -> dict[str, Any]:
         },
     }
     if not dry_run:
-        escalation_correct = [r["escalation_correct"] for r in records]
-        agg["escalation_accuracy"] = sum(escalation_correct) / len(escalation_correct)
+        errored = [r for r in records if "error" in r]
+        agg["n_errored"] = len(errored)
+        if errored:
+            agg["errors"] = {r["id"]: r["error"] for r in errored}
+
+        escalation_correct = [r["escalation_correct"] for r in records if "escalation_correct" in r]
+        if escalation_correct:
+            agg["escalation_accuracy"] = sum(escalation_correct) / len(escalation_correct)
 
         judged = [r["judge_scores"] for r in records if "judge_scores" in r]
         if judged:
@@ -130,7 +150,10 @@ def _print_report(report: dict[str, Any], dry_run: bool) -> None:
     r = report["retrieval"]
     print(f"Retrieval  — precision@k: {r['mean_precision_at_k']:.2f}  recall@k: {r['mean_recall_at_k']:.2f}  MRR: {r['mean_mrr']:.2f}")
     if not dry_run:
-        print(f"Escalation accuracy (correctly identifying knowledge-base gaps): {report['escalation_accuracy']:.2f}")
+        if report.get("n_errored"):
+            print(f"⚠ {report['n_errored']} scenario(s) errored and were excluded from the scores below: {report['errors']}")
+        if "escalation_accuracy" in report:
+            print(f"Escalation accuracy (correctly identifying knowledge-base gaps): {report['escalation_accuracy']:.2f}")
         if "fab_bench_scores" in report:
             fb = report["fab_bench_scores"]
             print("FAB-Bench-style scores (1-5, LLM-judged against reference answers):")

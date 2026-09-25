@@ -38,10 +38,21 @@ def diagnose(req: DiagnoseRequest) -> DiagnoseResponse:
         )
 
     answer = result["answer"]
+    causes: list[Cause] = []
+    for c in answer.get("causes", []):
+        try:
+            causes.append(Cause(**c))
+        except (TypeError, ValueError):
+            # continuity.llm's schema-driven coercion repairs the malformed
+            # tool-call shapes observed in practice, but LLM output is
+            # fundamentally non-deterministic — drop a residual unparseable
+            # cause rather than 500 the whole response over one of several.
+            continue
+
     return DiagnoseResponse(
         escalated=False,
         summary=answer.get("summary"),
-        causes=[Cause(**c) for c in answer.get("causes", [])],
+        causes=causes,
         retrieved_sources=retrieved_sources,
     )
 
