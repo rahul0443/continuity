@@ -19,7 +19,7 @@ EQUIPMENT_OPTIONS = [
 DISCLAIMER = (
     "**This is an independent portfolio PoC.** Every SOP, incident log, and "
     "knowledge-capture interview in its knowledge base is synthetic and "
-    "illustrative — none of it is real TSMC data. See the README for sourcing "
+    "illustrative — none of it is real company data. See the README for sourcing "
     "and scope."
 )
 

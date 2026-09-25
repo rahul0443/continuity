@@ -6,20 +6,20 @@
 
 *Free-tier hosting: the first request after idle time cold-starts slowly (tens of seconds) — that's Render's free plan spinning down, not a bug.*
 
-> ⚠️ **Scope disclaimer, read first:** This is an independent project built from public reporting. It does not use, and does not claim to use, any real TSMC internal data, SOPs, or systems. Every document in its knowledge base — SOPs, incident logs, and knowledge-capture interviews — is synthetic, written to be *representative* of the kind of institutional knowledge that is put at risk industry-wide when experienced engineers rotate out on fixed-term assignments. It demonstrates a prototyping pattern applied to a real, sourced, company-acknowledged problem — it is not a claim to have solved that problem or to understand TSMC's internal operations from the outside.
+> ⚠️ **Scope disclaimer, read first:** This is an independent project built from public reporting. It does not use, and does not claim to use, any real internal data, SOPs, or systems from any specific company. Every document in its knowledge base — SOPs, incident logs, and knowledge-capture interviews — is synthetic, written to be *representative* of the kind of institutional knowledge that is put at risk industry-wide when experienced engineers rotate out on fixed-term assignments. It demonstrates a prototyping pattern applied to a real, sourced, industry-acknowledged problem — it is not a claim to have solved that problem or to understand any specific company's internal operations from the outside.
 
 ---
 
 ## The problem this targets
 
-TSMC has itself named workforce continuity as one of its most acute challenges in the Arizona buildout — not a hypothesis from outside the company, but its own repeated, on-the-record statement:
+Semiconductor manufacturers building new U.S. fab capacity have themselves named workforce continuity as one of the most acute operational challenges — not a hypothesis from outside the industry, but repeated, on-the-record statements from the companies themselves:
 
-- **May 2026 (TrendForce):** TSMC flagged four key challenges in the Arizona buildout — utilities, regulatory complexity, visa delays, and, described in the most detail, labor shortage: "more than 1,000 Taiwanese engineers... are now approaching the end of their [three-year] contracts," with talent shortages "likely to persist, given the limited local manufacturing talent pool." ([TrendForce](https://www.trendforce.com/news/2026/05/12/news-tsmc-flags-four-key-challenges-in-arizona-buildout-even-as-u-s-fab-beats-expectations/))
-- **2023 earnings call:** Chairman Mark Liu: "We are encountering certain challenges, as there is an insufficient amount of skilled workers with the specialized expertise required for equipment installation in a semiconductor-grade facility... sending experienced technicians from Taiwan to train local skilled workers for a short period of time." (AnandTech, earnings-call coverage)
-- **Q3 2025:** a gas-supplier power outage caused hours of downtime, scrapped thousands of wafers, and cut quarterly profit by 99% at the Arizona fab. (Digitimes, Jan 2026)
-- **Analysis:** the recurring structural read is a "governance architecture" and "workforce formation system" gap — the tacit knowledge and authority structure built in Taiwan over decades doesn't yet exist in the Arizona operation. (Oxxegen Insights, Mar 2026)
+- **May 2026 (TrendForce):** a major manufacturer's U.S. fab buildout was flagged for four key challenges — utilities, regulatory complexity, visa delays, and, described in the most detail, labor shortage: "more than 1,000 Taiwanese engineers... are now approaching the end of their [three-year] contracts," with talent shortages "likely to persist, given the limited local manufacturing talent pool." ([TrendForce](https://www.trendforce.com/news/2026/05/12/news-tsmc-flags-four-key-challenges-in-arizona-buildout-even-as-u-s-fab-beats-expectations/))
+- **2023 earnings call:** a semiconductor manufacturer's chairman: "We are encountering certain challenges, as there is an insufficient amount of skilled workers with the specialized expertise required for equipment installation in a semiconductor-grade facility... sending experienced technicians from Taiwan to train local skilled workers for a short period of time." (AnandTech, earnings-call coverage)
+- **Q3 2025:** a gas-supplier power outage caused hours of downtime, scrapped thousands of wafers, and cut one fab operator's quarterly profit by 99%. (Digitimes, Jan 2026)
+- **Analysis:** the recurring structural read is a "governance architecture" and "workforce formation system" gap — the tacit knowledge and authority structure built up over decades at the home operation doesn't yet exist at the new site. (Oxxegen Insights, Mar 2026)
 
-This is a multi-year, multi-source, company-acknowledged pattern, not a one-off incident. Continuity is a prototype of the kind of tool a Forward Deployed Engineer would build and iterate on with domain experts in response to a pattern like this: capture what a rotating engineer knows before they leave, and surface it back to whoever is holding the pager next, at the moment they actually need it — a 2am fault, not a training binder nobody has time to read.
+This is a multi-year, multi-source, industry-acknowledged pattern, not a one-off incident. Continuity is a prototype of the kind of tool a Forward Deployed Engineer would build and iterate on with domain experts in response to a pattern like this: capture what a rotating engineer knows before they leave, and surface it back to whoever is holding the pager next, at the moment they actually need it — a 2am fault, not a training binder nobody has time to read.
 
 ## What it actually does
 
@@ -56,12 +56,12 @@ flowchart LR
 
 | Decision | Choice | Why |
 |---|---|---|
-| Vector store | **Chroma**, local default embedding function (ONNX MiniLM) | JD-named; zero API key / zero cost for indexing and dense retrieval — Pinecone's account dependency and Milvus's ops overhead are both unjustified at this scope. |
+| Vector store | **Chroma**, local default embedding function (ONNX MiniLM) | Zero API key / zero cost for indexing and dense retrieval at this scope — Pinecone's account dependency and Milvus's ops overhead are both unjustified for a PoC this size. |
 | Retrieval | **Hybrid dense + BM25 with Reciprocal Rank Fusion** | Fault descriptions contain exact tokens (tool IDs, error codes) that dense embeddings under-weight; pure BM25 misses paraphrased symptoms. The real commercial products in this space use the same hybrid pattern for the same reason. |
-| Agent orchestration | **LangGraph**, typed state, forced tool-use for structured output | The JD lists LangChain generically; LangGraph is LangChain's own current answer for stateful agents. The triage→route step is genuine agentic decision-making (route to answer vs. escalate), not a fixed RAG chain. |
-| Generation | **Anthropic API**, forced tool-use (not prompted JSON) | JD-named; tool-use gives validated structured output instead of regexing JSON out of free text. |
-| Backend | **FastAPI** | JD-named; real Pydantic schemas, a `/api/diagnose` and `/api/cases/resolve` surface independently callable over HTTP — not just glued to the UI. |
-| Frontend | **Gradio**, mounted onto the FastAPI app | JD-named low-code/rapid-prototyping framework; mounting keeps this one deployable service instead of two. |
+| Agent orchestration | **LangGraph**, typed state, forced tool-use for structured output | LangGraph is LangChain's current answer for stateful agents. The triage→route step is genuine agentic decision-making (route to answer vs. escalate), not a fixed RAG chain. |
+| Generation | **Anthropic API**, forced tool-use (not prompted JSON) | Tool-use gives validated structured output instead of regexing JSON out of free text. |
+| Backend | **FastAPI** | Real Pydantic schemas, with `/api/diagnose` and `/api/cases/resolve` independently callable over HTTP — not just glued to the UI. |
+| Frontend | **Gradio**, mounted onto the FastAPI app | A standard low-code/rapid-prototyping framework for this kind of demo; mounting keeps this one deployable service instead of two. |
 | Eval | **FAB-Bench-style**, six dimensions | Modeled on a peer-reviewed 2026 RAG benchmark built specifically for semiconductor manufacturing (arXiv:2605.26476), not invented criteria. |
 
 ## The knowledge base (synthetic)
@@ -140,7 +140,7 @@ One free-tier caveat worth being upfront about: Render's free web services spin 
 
 ## Path to production (explicitly out of scope here)
 
-This is a PoC, not a production system — naming that boundary is itself part of the JD's "partner with core IT and MLOps to transition prototypes into production-ready systems." Before this could run against real fab data, it would need: authentication and role-based access control; real data governance and PII/IP review on anything ingested; a persistence layer beyond local JSONL files for logged gaps and resolved cases (the current write-back demo — resolving a case, flagging a gap — writes to the container's local disk, which Render's free tier does not persist across restarts or redeploys; a real deployment needs an actual database here, not just more disk); monitoring and alerting on escalation rate and judge-score drift; a human-review gate before any generated diagnosis reaches a live equipment action; and load-tested deployment beyond a single-process demo.
+This is a PoC, not a production system — naming that boundary explicitly is itself part of how forward-deployed engineering roles typically frame this handoff: partnering with core IT/MLOps teams to transition a prototype into a production-ready system, rather than shipping the prototype straight to production. Before this could run against real fab data, it would need: authentication and role-based access control; real data governance and PII/IP review on anything ingested; a persistence layer beyond local JSONL files for logged gaps and resolved cases (the current write-back demo — resolving a case, flagging a gap — writes to the container's local disk, which Render's free tier does not persist across restarts or redeploys; a real deployment needs an actual database here, not just more disk); monitoring and alerting on escalation rate and judge-score drift; a human-review gate before any generated diagnosis reaches a live equipment action; and load-tested deployment beyond a single-process demo.
 
 ## Repo layout
 
