@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: pytest -q
+
+  retrieval-regression-gate:
+    # Rebuilds the index with the real local embedding model and fails the
+    # build if precision@k, recall@k or MRR drop versus the committed
+    # baseline (data/eval/retrieval_baseline.json). No API key needed.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: python scripts/ingest.py
+      - run: python scripts/run_eval.py --dry-run --out retrieval_report.json
+      - run: python scripts/check_regression.py --report retrieval_report.json

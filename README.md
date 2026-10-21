@@ -157,3 +157,10 @@ continuity/
 ├── scripts/                  # ingest.py, run_eval.py
 └── tests/
 ```
+
+
+## Observability, reranking and the retrieval regression gate
+
+- **Structured logging:** every pipeline stage (`retrieve`, `triage`, `answer`, `escalate`) and each `/api/diagnose` request logs one JSON line with stage name, latency in milliseconds, status and a request ID (`continuity/observability.py`).
+- **Optional reranker:** set `RERANKER_MODEL` (for example a sentence-transformers cross-encoder) after `pip install "continuity[rerank]"` to rerank the fused candidates. It is off by default, so baseline metrics are unchanged. The ordering logic is unit-tested with an injected scorer; I have not yet evaluated a specific cross-encoder on this corpus.
+- **Retrieval regression gate:** `scripts/check_regression.py` compares a fresh `run_eval.py --dry-run` report with `data/eval/retrieval_baseline.json` and fails if precision@k, recall@k or MRR drop by more than 0.02. `.github/workflows/ci.yml` runs the unit tests and this gate on every push and pull request.

@@ -22,6 +22,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+rerank = ["sentence-transformers>=3.0"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -25,6 +25,7 @@ from continuity.agent.prompts import (
 from continuity.agent.tools import flag_knowledge_gap
 from continuity.config import settings
 from continuity.llm import call_structured
+from continuity.observability import timed_stage
 from continuity.retrieval.hybrid import HybridRetriever, RetrievedChunk
 from continuity.retrieval.vectorstore import get_client, get_collection
 
@@ -84,12 +85,15 @@ def _format_context(retrieved: list[RetrievedChunk]) -> str:
 
 def build_graph(retriever: HybridRetriever):
     def node_retrieve(state: ContinuityState) -> ContinuityState:
-        retrieved = retriever.retrieve(state["query"], k=settings.retrieval_top_k)
+        with timed_stage("retrieve") as log:
+            retrieved = retriever.retrieve(state["query"], k=settings.retrieval_top_k)
+            log["n_chunks"] = len(retrieved)
+            log["top_fused_score"] = round(retrieved[0].fused_score, 4) if retrieved else 0.0
         return {"retrieved": retrieved}
 
     def node_triage(state: ContinuityState) -> ContinuityState:
         retrieved = state["retrieved"]
-        top_score = retrieved[0].fused_score if retrieved else 0.0
+        top_score = max((r.fused_score for r in retrieved), default=0.0)
         if top_score < settings.min_fused_score_threshold:
             # Cheap heuristic gate: skip the LLM call entirely when nothing
             # retrieved even weakly matches, rather than paying for a model
@@ -105,15 +109,17 @@ def build_graph(retriever: HybridRetriever):
                 }
             }
         context = _format_context(retrieved)
-        triage = call_structured(
-            system=TRIAGE_SYSTEM_PROMPT,
-            user=TRIAGE_USER_TEMPLATE.format(
-                query=state["query"], equipment=state.get("equipment") or "unspecified", context=context
-            ),
-            tool_name="submit_triage_decision",
-            tool_description="Submit whether the retrieved evidence is sufficient to ground a diagnosis.",
-            input_schema=TRIAGE_SCHEMA,
-        )
+        with timed_stage("triage") as log:
+            triage = call_structured(
+                system=TRIAGE_SYSTEM_PROMPT,
+                user=TRIAGE_USER_TEMPLATE.format(
+                    query=state["query"], equipment=state.get("equipment") or "unspecified", context=context
+                ),
+                tool_name="submit_triage_decision",
+                tool_description="Submit whether the retrieved evidence is sufficient to ground a diagnosis.",
+                input_schema=TRIAGE_SCHEMA,
+            )
+            log["sufficient"] = bool(triage.get("sufficient"))
         return {"triage": triage}
 
     def route_after_triage(state: ContinuityState) -> Literal["answer", "escalate"]:
@@ -121,21 +127,24 @@ def build_graph(retriever: HybridRetriever):
 
     def node_answer(state: ContinuityState) -> ContinuityState:
         context = _format_context(state["retrieved"])
-        answer = call_structured(
-            system=ANSWER_SYSTEM_PROMPT,
-            user=ANSWER_USER_TEMPLATE.format(
-                query=state["query"], equipment=state.get("equipment") or "unspecified", context=context
-            ),
-            tool_name="submit_diagnosis",
-            tool_description="Submit the ranked, cited diagnosis.",
-            input_schema=ANSWER_SCHEMA,
-            max_tokens=1536,
-        )
+        with timed_stage("answer") as log:
+            answer = call_structured(
+                system=ANSWER_SYSTEM_PROMPT,
+                user=ANSWER_USER_TEMPLATE.format(
+                    query=state["query"], equipment=state.get("equipment") or "unspecified", context=context
+                ),
+                tool_name="submit_diagnosis",
+                tool_description="Submit the ranked, cited diagnosis.",
+                input_schema=ANSWER_SCHEMA,
+                max_tokens=1536,
+            )
+            log["n_causes"] = len(answer.get("causes", []))
         return {"answer": answer, "escalated": False}
 
     def node_escalate(state: ContinuityState) -> ContinuityState:
         reasoning = state["triage"]["reasoning"]
-        flag_knowledge_gap(state["query"], state.get("equipment"), reasoning)
+        with timed_stage("escalate"):
+            flag_knowledge_gap(state["query"], state.get("equipment"), reasoning)
         message = (
             "Knowledge base coverage is insufficient for a grounded diagnosis. "
             "This has been logged as a knowledge gap for follow-up. Recommend "
@@ -175,7 +184,12 @@ def _get_graph():
     if _compiled_graph is None:
         client = get_client(settings.chroma_persist_dir)
         collection = get_collection(client)
-        _retriever = HybridRetriever(collection)
+        reranker = None
+        if settings.reranker_model:
+            from continuity.retrieval.rerank import load_cross_encoder
+
+            reranker = load_cross_encoder(settings.reranker_model)
+        _retriever = HybridRetriever(collection, reranker=reranker)
         _compiled_graph = build_graph(_retriever)
     return _compiled_graph
 

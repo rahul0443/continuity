@@ -13,6 +13,7 @@ from continuity.api.schemas import (
     ResolveCaseResponse,
 )
 from continuity.llm import MissingAPIKeyError
+from continuity.observability import new_request_id, timed_stage
 
 router = APIRouter()
 
@@ -24,8 +25,11 @@ def health() -> dict:
 
 @router.post("/diagnose", response_model=DiagnoseResponse)
 def diagnose(req: DiagnoseRequest) -> DiagnoseResponse:
+    new_request_id()
     try:
-        result = run_continuity_agent(req.query, req.equipment)
+        with timed_stage("diagnose_request", equipment=req.equipment) as log:
+            result = run_continuity_agent(req.query, req.equipment)
+            log["escalated"] = bool(result.get("escalated"))
     except MissingAPIKeyError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except anthropic.APIError as exc:

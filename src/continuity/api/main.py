@@ -4,7 +4,10 @@ from fastapi import FastAPI
 from gradio import mount_gradio_app
 
 from continuity.api.routes import router
+from continuity.observability import configure_logging
 from continuity.ui.app import build_gradio_app
+
+configure_logging()
 
 app = FastAPI(
     title="Continuity API",

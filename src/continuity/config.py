@@ -34,6 +34,7 @@ class Settings:
     min_fused_score_threshold: float = field(
         default_factory=lambda: float(os.getenv("MIN_FUSED_SCORE_THRESHOLD", "0.02"))
     )
+    reranker_model: str = field(default_factory=lambda: os.getenv("RERANKER_MODEL", ""))
 
 
 settings = Settings()

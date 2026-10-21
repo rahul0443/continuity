@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from typing import Callable, Sequence
 
 from rank_bm25 import BM25Okapi
 
@@ -32,6 +33,7 @@ class RetrievedChunk:
     fused_score: float
     dense_rank: int | None
     bm25_rank: int | None
+    rerank_score: float | None = None
 
 
 class HybridRetriever:
@@ -40,9 +42,17 @@ class HybridRetriever:
     hundreds of chunks); a larger deployment would persist the BM25 index
     separately instead of reloading it from Chroma each time."""
 
-    def __init__(self, collection, rrf_k: int = 60):
+    def __init__(
+        self,
+        collection,
+        rrf_k: int = 60,
+        reranker: Callable[[str, Sequence[str]], Sequence[float]] | None = None,
+        rerank_candidates: int = 15,
+    ):
         self.collection = collection
         self.rrf_k = rrf_k
+        self.reranker = reranker
+        self.rerank_candidates = rerank_candidates
         self.chunks = fetch_all_chunks(collection)
         self.chunks_by_id = {c.chunk_id: c for c in self.chunks}
         self._bm25 = BM25Okapi([_tokenize(c.text) for c in self.chunks]) if self.chunks else None
@@ -80,4 +90,8 @@ class HybridRetriever:
                 )
             )
         fused.sort(key=lambda r: r.fused_score, reverse=True)
+        if self.reranker is not None:
+            from continuity.retrieval.rerank import rerank
+
+            return rerank(query, fused[: max(k, self.rerank_candidates)], self.reranker, top_k=k)
         return fused[:k]

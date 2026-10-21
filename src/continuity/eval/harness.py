@@ -22,6 +22,14 @@ from continuity.retrieval.hybrid import HybridRetriever
 from continuity.retrieval.vectorstore import get_client, get_collection
 
 
+def _maybe_reranker():
+    if not settings.reranker_model:
+        return None
+    from continuity.retrieval.rerank import load_cross_encoder
+
+    return load_cross_encoder(settings.reranker_model)
+
+
 def _load_scenarios() -> list[dict]:
     path = settings.eval_dir / "fault_scenarios.json"
     return json.loads(path.read_text(encoding="utf-8"))
@@ -55,14 +63,14 @@ def run_eval(dry_run: bool = False, out_path: str = "eval_results.json") -> dict
     scenarios = _load_scenarios()
     client = get_client(settings.chroma_persist_dir)
     collection = get_collection(client)
-    retriever = HybridRetriever(collection)
+    retriever = HybridRetriever(collection, reranker=_maybe_reranker())
 
     per_scenario: list[dict[str, Any]] = []
 
     for scenario in scenarios:
         retrieved = retriever.retrieve(scenario["query"], k=settings.retrieval_top_k)
         retrieval_metrics = score_retrieval(retrieved, scenario["relevant_doc_ids"])
-        top_score = retrieved[0].fused_score if retrieved else 0.0
+        top_score = max((r.fused_score for r in retrieved), default=0.0)
         would_gate_escalate = top_score < settings.min_fused_score_threshold
 
         record: dict[str, Any] = {
